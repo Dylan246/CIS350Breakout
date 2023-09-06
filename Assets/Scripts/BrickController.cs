@@ -18,7 +18,7 @@ public class BrickController : MonoBehaviour
     {
         if(collision.gameObject.name == "Ball")
         {
-            gameController = GameObject.FindObjectOfType<GameController>();
+            gameController = GameObject.FindObjectOfType<GameController>(); //Added to fix bug 
             gameController.UpdateScore(); //Calls UpdateScore in game controller to update score
             Destroy(gameObject);
         }
