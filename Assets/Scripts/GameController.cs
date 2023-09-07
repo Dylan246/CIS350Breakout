@@ -11,6 +11,7 @@ public class GameController : MonoBehaviour
     private InputAction move;
     private InputAction restart;
     private InputAction quit;
+    private InputAction launchBall;
 
     private bool isPaddleMoving;
     [SerializeField] private GameObject paddle;
@@ -73,13 +74,19 @@ public class GameController : MonoBehaviour
         move = playerInput.currentActionMap.FindAction("MovePaddle");
         restart = playerInput.currentActionMap.FindAction("RestartGame");
         quit = playerInput.currentActionMap.FindAction("QuitGame");
+        launchBall = playerInput.currentActionMap.FindAction("LaunchBall");
 
         move.started += Move_started;
         move.canceled += Move_canceled;
         restart.started += Restart_started;
         quit.started += Quit_started;
+        launchBall.started += LaunchBall_started;
 
         isPaddleMoving = false;
+    }
+    private void LaunchBall_started(InputAction.CallbackContext obj)
+    {
+        ball.LaunchTheBall();
     }
 
     private void Move_canceled(InputAction.CallbackContext obj)
