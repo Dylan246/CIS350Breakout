@@ -7,11 +7,13 @@ public class BallController : MonoBehaviour
 {
     [SerializeField] private GameObject paddle;
     private bool isBallInPlay;
+    private GameController gameController;
     
     // Start is called before the first frame update
     void Start()
     {
         ResetBall();
+        gameController = GameObject.FindObjectOfType<GameController>();
     }
 
     public void ResetBall()
@@ -30,6 +32,11 @@ public class BallController : MonoBehaviour
         }
     }
 
+    public void StopBall()
+    {
+        gameObject.SetActive(false); //Turn it off 
+    }
+
     // Update is called once per frame
     //Movement, collision detections should go in update
     void Update()
@@ -37,6 +44,13 @@ public class BallController : MonoBehaviour
         if (!isBallInPlay) //If ball is not in play follow the paddle
         {
             gameObject.transform.position = paddle.transform.position + new Vector3(0, 0.5f);
+        }
+        else if (gameObject.transform.position.y < -5) //Less then height, should be -6
+        {
+            //Lose a life
+            gameController.LoseALife();
+            //Reset ball
+            ResetBall();
         }
     }
 }

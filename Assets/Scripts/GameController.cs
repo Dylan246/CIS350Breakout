@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem; //Needs to be included to work with input actions 
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -25,7 +26,13 @@ public class GameController : MonoBehaviour
 
     [SerializeField] private TMP_Text endGameText;
 
-    private BallController ball;
+    private BallController ballController;
+
+    [SerializeField] private TMP_Text livesText;
+    private int lives;
+
+    [SerializeField] private TMP_Text restartText;
+    [SerializeField] private TMP_Text launchText;
 
     // Start is called before the first frame update
     void Start()
@@ -46,11 +53,30 @@ public class GameController : MonoBehaviour
             }
         }
 
-        ball = GameObject.FindObjectOfType<BallController>();
-
+        ballController = GameObject.FindObjectOfType<BallController>();
+        lives = 3;
+        livesText.text = "Lives: " + lives.ToString();
+        scoreText.text = "Score: " + score.ToString();
+        restartText.gameObject.SetActive(false);
+        
         //Hide game obj
         endGameText.gameObject.SetActive(false);
 
+    }
+    public void LoseALife()
+    {
+        lives--;
+        livesText.text = "Lives: " + lives.ToString();
+
+        if(lives == 0)
+        {
+            endGameText.text = "YOU HAVE FAILED!";
+            endGameText.gameObject.SetActive(true); //Basically .visible = true
+            ballController.StopBall();
+            paddle.SetActive(false);
+            restartText.gameObject.SetActive(true);
+            launchText.gameObject.SetActive(true);
+        }
     }
 
     public void UpdateScore()
@@ -62,7 +88,10 @@ public class GameController : MonoBehaviour
         {
             endGameText.text = "YOU WIN!!!";
             endGameText.gameObject.SetActive(true);
-            ball.ResetBall();
+            ballController.StopBall();
+            paddle.SetActive(false);
+            restartText.gameObject.SetActive(true);
+            launchText.gameObject.SetActive(true);
         }
     }
 
@@ -76,17 +105,30 @@ public class GameController : MonoBehaviour
         quit = playerInput.currentActionMap.FindAction("QuitGame");
         launchBall = playerInput.currentActionMap.FindAction("LaunchBall");
 
+        //Listeners
         move.started += Move_started;
         move.canceled += Move_canceled;
         restart.started += Restart_started;
         quit.started += Quit_started;
         launchBall.started += LaunchBall_started;
 
+
         isPaddleMoving = false;
     }
+
+    private void OnDestroy()
+    { 
+        move.started -= Move_started;
+        move.canceled -= Move_canceled;
+        restart.started -= Restart_started;
+        quit.started -= Quit_started;
+        launchBall.started -= LaunchBall_started;
+    }
+
     private void LaunchBall_started(InputAction.CallbackContext obj)
     {
-        ball.LaunchTheBall();
+        ballController.LaunchTheBall();
+        launchText.gameObject.SetActive(false);
     }
 
     private void Move_canceled(InputAction.CallbackContext obj)
@@ -100,12 +142,14 @@ public class GameController : MonoBehaviour
 
     private void Quit_started(InputAction.CallbackContext obj)
     {
-
+        Application.Quit(); //Will not work in editor
+        UnityEditor.EditorApplication.isPlaying = false;
     }
 
     private void Restart_started(InputAction.CallbackContext obj)
     {
-    
+        SceneManager.LoadScene(0);
+        restartText.gameObject.SetActive(false);
     }
 
     private void FixedUpdate()
@@ -114,7 +158,6 @@ public class GameController : MonoBehaviour
         {
             //move the paddle
             paddle.GetComponent<Rigidbody2D>().velocity = new Vector2(paddleSpeed * moveDirection, 0);
-
         }
         else
         {
